@@ -14,8 +14,6 @@ export async function getAll(req, res) {
 
 export async function create(req, res) {
   try {
-    console.log(req.body.name);
-
     const { name, description, element } = req.body;
 
     if (!name || !description || !element)
