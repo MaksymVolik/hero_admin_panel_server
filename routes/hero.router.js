@@ -1,12 +1,17 @@
 import { Router } from "express";
 const heroRouter = Router();
 
-import { getAll, create, deleteById } from "../controllers/hero.controller.js";
+import {
+  getAll,
+  create,
+  updateById,
+  deleteById,
+} from "../controllers/hero.controller.js";
 
 heroRouter.get("/heroes", getAll);
 // heroRouter.get("/:id", getById);
 heroRouter.post("/heroes", create);
-// heroRouter.put("/:id", updateById);
+heroRouter.put("/heroes/:id", updateById);
 heroRouter.delete("/heroes/:id", deleteById);
 
 export default heroRouter;
@@ -80,6 +85,62 @@ export default heroRouter;
  *                     $ref: '#/components/schemas/Hero'
  *       400:
  *         description: Bad Request
+ */
+
+/**
+ * @openapi
+ * '/api/heroes/{id}':
+ *   put:
+ *     tags:
+ *     - Hero
+ *     summary: Update the hero by ID
+ *     description: For valid response try integer IDs. Anything nonintegers will generate API errors.
+ *     operationId: updateHero
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         description: ID of the hero that needs to be updated
+ *         required: true
+ *         schema:
+ *           type: integer
+ *           format: int64
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             required:
+ *               - name
+ *               - description
+ *               - element
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 default: Hero
+ *               description:
+ *                 type: string
+ *                 default: Super hero
+ *               element:
+ *                 type: string
+ *                 default: fire
+ *     responses:
+ *       200:
+ *         description: Successful operation
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Hero'
+ *       400:
+ *         description: Invalid ID supplied
+ *       404:
+ *         description: Hero not found
  */
 
 /**

@@ -2,7 +2,7 @@ import { sql } from "@vercel/postgres";
 
 export async function getAll(req, res) {
   try {
-    const { rows } = await sql`SELECT * FROM heroes;`;
+    const { rows } = await sql`SELECT * FROM heroes ORDER BY id;`;
     return res.status(200).json({
       message: `Heroes received successfully.`,
       data: rows,
@@ -31,6 +31,29 @@ export async function create(req, res) {
   }
 }
 
+export async function updateById(req, res) {
+  try {
+    const id = req.params.id;
+    const { name, description, element } = req.body;
+
+    const { rowCount, rows } = await sql`UPDATE heroes 
+                SET name=${name}, description=${description}, element=${element} 
+                WHERE id=${id} 
+                RETURNING *;`;
+
+    if (!rowCount || rowCount === 0) {
+      return res.status(404).json({ message: "The hero not found" });
+    }
+
+    return res.status(200).json({
+      message: `The hero has been updated.`,
+      data: rows,
+    });
+  } catch (error) {
+    return res.status(500).json({ error });
+  }
+}
+
 export async function deleteById(req, res) {
   try {
     const id = req.params.id;
@@ -46,6 +69,6 @@ export async function deleteById(req, res) {
       data: rows,
     });
   } catch (error) {
-    return response.status(500).json({ error });
+    return res.status(500).json({ error });
   }
 }
