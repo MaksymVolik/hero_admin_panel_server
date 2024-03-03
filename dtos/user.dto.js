@@ -8,6 +8,6 @@ export class UserDto {
     this.username = model.username;
     this.email = model.email;
     this.userId = model.user_id;
-    this.isActivated = model.isActivated;
+    this.isActivated = model.is_activated;
   }
 }
