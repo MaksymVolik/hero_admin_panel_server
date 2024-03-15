@@ -5,9 +5,23 @@ import {
   logoutUser,
   refreshUser,
   getAllUsers,
+  resendEmailUser,
 } from "../service/user.service.js";
 import { validationResult } from "express-validator";
 import { ApiError } from "../exceptions/api.error.js";
+
+export const getMe = (req, res, next) => {
+  try {
+    const user = req.user;
+
+    return res.status(200).json({
+      status: "success",
+      data: user,
+    });
+  } catch (e) {
+    next(e);
+  }
+};
 
 export async function registration(req, res, next) {
   try {
@@ -20,7 +34,6 @@ export async function registration(req, res, next) {
     res.cookie("refreshToken", UserData.refreshToken, {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      secure: true,
     });
     return res.json(UserData);
   } catch (e) {
@@ -37,7 +50,6 @@ export async function login(req, res, next) {
     res.cookie("refreshToken", UserData.refreshToken, {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      secure: true,
     });
 
     return res.json(UserData);
@@ -59,11 +71,11 @@ export async function logout(req, res, next) {
 export async function refresh(req, res, next) {
   try {
     const { refreshToken } = req.cookies;
+
     const UserData = await refreshUser(refreshToken);
     res.cookie("refreshToken", UserData.refreshToken, {
       maxAge: 30 * 24 * 60 * 60 * 1000,
       httpOnly: true,
-      secure: true,
     });
     return res.json(UserData);
   } catch (e) {
@@ -83,6 +95,19 @@ export async function getUsers(req, res, next) {
   try {
     const users = await getAllUsers();
     return res.json(users);
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function resendEmail(req, res, next) {
+  try {
+    const user = req.user;
+    await resendEmailUser(user.user_id);
+
+    return res.status(200).json({
+      status: "success",
+    });
   } catch (e) {
     next(e);
   }

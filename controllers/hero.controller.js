@@ -12,6 +12,24 @@ export async function getAll(req, res) {
   }
 }
 
+export async function getHeroById(req, res) {
+  try {
+    const id = req.params.id;
+    const { rowCount, rows } = await sql`SELECT * FROM heroes WHERE id=${id};`;
+
+    if (rowCount === 0) {
+      return res.status(404).json({ message: "The hero not found." });
+    }
+
+    return res.status(200).json({
+      message: `Hero received successfully.`,
+      data: rows,
+    });
+  } catch (error) {
+    return res.status(500).json({ error });
+  }
+}
+
 export async function create(req, res) {
   try {
     const { name, description, element } = req.body;

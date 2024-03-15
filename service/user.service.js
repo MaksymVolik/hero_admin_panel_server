@@ -8,19 +8,23 @@ import {
   saveToken,
   removeToken,
   validateRefreshToken,
-  validateAccessToken,
   findToken,
 } from "./token.service.js";
 import { UserDto } from "../dtos/user.dto.js";
 import { ApiError } from "../exceptions/api.error.js";
 
 export async function regUser(username, email, password) {
-  if (!username || !email || !password)
-    throw ApiError.BadRequest("Name, email and password required");
+  const { rowCount: isExistedUsername } =
+    await sql`SELECT * FROM users WHERE username = ${username};`;
 
-  const { rowCount } = await sql`SELECT * FROM users WHERE email = ${email};`;
+  if (isExistedUsername !== 0) {
+    throw ApiError.BadRequest(`Username "${username}" already exists`);
+  }
 
-  if (!rowCount === 0) {
+  const { rowCount: isExistedEmail } =
+    await sql`SELECT * FROM users WHERE email = ${email};`;
+
+  if (isExistedEmail !== 0) {
     throw ApiError.BadRequest(
       `User with email address ${email} already exists`
     );
@@ -42,7 +46,7 @@ export async function regUser(username, email, password) {
   const userDto = new UserDto(user[0]);
 
   const tokens = generateTokens({ ...userDto });
-  await saveToken(userDto.userId, tokens.refreshToken);
+  await saveToken(userDto.user_id, tokens.refreshToken);
 
   return { ...tokens, user: userDto };
 }
@@ -76,7 +80,7 @@ export async function loginUser(email, password) {
   const userDto = new UserDto(user[0]);
 
   const tokens = generateTokens({ ...userDto });
-  await saveToken(userDto.userId, tokens.refreshToken);
+  await saveToken(userDto.user_id, tokens.refreshToken);
 
   return { ...tokens, user: userDto };
 }
@@ -99,16 +103,32 @@ export async function refreshUser(refreshToken) {
   }
 
   const { rows: user } =
-    await sql`SELECT * FROM users WHERE user_id=${userData.userId}`;
+    await sql`SELECT * FROM users WHERE user_id=${userData.user_id}`;
   const userDto = new UserDto(user[0]);
 
   const tokens = generateTokens({ ...userDto });
-  await saveToken(userDto.userId, tokens.refreshToken);
+  await saveToken(userDto.user_id, tokens.refreshToken);
 
   return { ...tokens, user: userDto };
 }
 
-export async function getAllUsers() {
+export const resendEmailUser = async (user_id) => {
+  const { rowCount, rows } =
+    await sql`SELECT * FROM users WHERE user_id=${user_id}`;
+
+  if (rowCount === 0) {
+    throw ApiError.BadRequest(
+      `User with email address ${email} not found or password is incorrect`
+    );
+  }
+
+  await sendActivationMail(
+    rows[0].email,
+    `${process.env.API_URL}/api/activate/${rows[0].link}`
+  );
+};
+
+export const getAllUsers = async () => {
   const { rows } = await sql`SELECT * FROM users;`;
   return rows;
-}
+};

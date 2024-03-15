@@ -3,10 +3,10 @@ import { sql } from "@vercel/postgres";
 
 export function generateTokens(payload) {
   const accessToken = jwt.sign(payload, process.env.JWT_ACCESS_SECRET, {
-    expiresIn: "30s",
+    expiresIn: "10m",
   });
   const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: "30d",
+    expiresIn: "20d",
   });
   return { accessToken, refreshToken };
 }
@@ -28,10 +28,10 @@ export function validateRefreshToken(token) {
   }
 }
 
-export async function saveToken(userId, refreshToken) {
+export async function saveToken(user_id, refreshToken) {
   const { rowCount, rows } = await sql`UPDATE tokens 
                 SET refreshtoken=${refreshToken} 
-                WHERE user_id=${userId} 
+                WHERE user_id=${user_id} 
                 RETURNING *;`;
 
   if (rowCount > 0) {
@@ -39,7 +39,7 @@ export async function saveToken(userId, refreshToken) {
   }
 
   const { rows: row } = await sql`INSERT INTO tokens (user_id, refreshtoken) 
-                VALUES (${userId}, ${refreshToken})
+                VALUES (${user_id}, ${refreshToken})
                 RETURNING *;`;
   return row[0];
 }

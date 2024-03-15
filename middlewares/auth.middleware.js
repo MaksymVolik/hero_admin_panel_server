@@ -4,7 +4,10 @@ import { validateAccessToken } from "../service/token.service.js";
 export default (req, res, next) => {
   try {
     const authorizationHeader = req.headers.authorization;
-    if (!authorizationHeader) {
+    if (
+      !authorizationHeader ||
+      req.headers.authorization?.indexOf("Bearer") === -1
+    ) {
       return next(ApiError.UnauthorizedError());
     }
 

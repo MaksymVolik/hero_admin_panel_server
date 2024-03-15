@@ -9,6 +9,8 @@ import {
   refresh,
   activate,
   getUsers,
+  getMe,
+  resendEmail,
 } from "../controllers/user.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
 
@@ -20,9 +22,11 @@ userRouter.post(
   registration
 );
 userRouter.post("/login", login);
-userRouter.post("/logout", logout);
+userRouter.post("/logout", authMiddleware, logout);
 userRouter.get("/activate/:link", activate);
 userRouter.get("/refresh", refresh);
 userRouter.get("/users", authMiddleware, getUsers);
+userRouter.get("/me", authMiddleware, getMe);
+userRouter.post("/resendemail", authMiddleware, resendEmail);
 
 export default userRouter;

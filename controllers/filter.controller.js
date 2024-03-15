@@ -1,32 +1,31 @@
-import { sql } from "@vercel/postgres";
+import { createFilter, getAllFilters } from "../service/filter.service.js";
+import { ApiError } from "../exceptions/api.error.js";
 
-export async function getAll(req, res) {
+export async function getAll(req, res, next) {
   try {
-    const { rows } = await sql`SELECT * FROM filters;`;
+    const filters = await getAllFilters();
     return res.status(200).json({
       message: `Filtres received successfully.`,
-      data: rows,
+      data: filters,
     });
-  } catch (error) {
-    return res.status(500).json({ error });
+  } catch (e) {
+    next(e);
   }
 }
 
-export async function create(req, res) {
+export async function create(req, res, next) {
   try {
     const { name, title, className } = req.body;
+    if (!name || !title || !className) {
+      throw ApiError.BadRequest("Name, title and element required");
+    }
 
-    if (!name || !title || !className)
-      throw new Error("Name, title and element required");
-
-    const { rows } = await sql`INSERT INTO filters (name, title, className) 
-                VALUES (${name}, ${title}, ${className})
-                RETURNING *;`;
+    const filter = await createFilter(name, title, className);
     return res.status(201).json({
       message: `A filter has been created.`,
-      data: rows,
+      data: filter,
     });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
+  } catch (e) {
+    next(e);
   }
 }

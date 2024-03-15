@@ -1,14 +1,19 @@
 import { Router } from "express";
 const heroRouter = Router();
+import authMiddleware from "../middlewares/auth.middleware.js";
 
 import {
   getAll,
+  getHeroById,
   create,
   updateById,
   deleteById,
 } from "../controllers/hero.controller.js";
 
+heroRouter.use(authMiddleware);
+
 heroRouter.get("/heroes", getAll);
+heroRouter.get("/heroes/:id", getHeroById);
 // heroRouter.get("/:id", getById);
 heroRouter.post("/heroes", create);
 heroRouter.put("/heroes/:id", updateById);
