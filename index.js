@@ -8,6 +8,7 @@ import userRouter from "./routes/user.routes.js";
 import heroRouter from "./routes/hero.router.js";
 import filterRouter from "./routes/filter.routes.js";
 import swaggerDocs from "./config/swagger.js";
+import { ApiError } from "./exceptions/api.error.js";
 import errorMiddleware from "./middlewares/error.middleware.js";
 
 const app = express();
@@ -25,9 +26,16 @@ app.use(
 app.use("/api", userRouter);
 app.use("/api", heroRouter);
 app.use("/api", filterRouter);
-app.use(errorMiddleware);
 
 swaggerDocs(app);
+
+// UnKnown Routes
+app.all("*", (req, res, next) => {
+  const err = ApiError.NotFound(`Route ${req.originalUrl} not found`);
+  next(err);
+});
+
+app.use(errorMiddleware);
 
 app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);

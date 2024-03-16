@@ -1,6 +1,7 @@
 import { Router } from "express";
 const heroRouter = Router();
 import authMiddleware from "../middlewares/auth.middleware.js";
+import requireUser from "../middlewares/requireUser.js";
 
 import {
   getAll,
@@ -10,14 +11,14 @@ import {
   deleteById,
 } from "../controllers/hero.controller.js";
 
-heroRouter.use(authMiddleware);
+// heroRouter.use(authMiddleware);
 
-heroRouter.get("/heroes", getAll);
-heroRouter.get("/heroes/:id", getHeroById);
+heroRouter.get("/heroes", authMiddleware, requireUser, getAll);
+heroRouter.get("/heroes/:id", authMiddleware, requireUser, getHeroById);
 // heroRouter.get("/:id", getById);
-heroRouter.post("/heroes", create);
-heroRouter.put("/heroes/:id", updateById);
-heroRouter.delete("/heroes/:id", deleteById);
+heroRouter.post("/heroes", authMiddleware, requireUser, create);
+heroRouter.put("/heroes/:id", authMiddleware, requireUser, updateById);
+heroRouter.delete("/heroes/:id", authMiddleware, requireUser, deleteById);
 
 export default heroRouter;
 

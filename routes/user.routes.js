@@ -13,6 +13,7 @@ import {
   resendEmail,
 } from "../controllers/user.controller.js";
 import authMiddleware from "../middlewares/auth.middleware.js";
+import requireUser from "../middlewares/requireUser.js";
 
 userRouter.post(
   "/registration",
@@ -25,8 +26,8 @@ userRouter.post("/login", login);
 userRouter.post("/logout", authMiddleware, logout);
 userRouter.get("/activate/:link", activate);
 userRouter.get("/refresh", refresh);
-userRouter.get("/users", authMiddleware, getUsers);
-userRouter.get("/me", authMiddleware, getMe);
-userRouter.post("/resendemail", authMiddleware, resendEmail);
+userRouter.get("/users", authMiddleware, requireUser, getUsers);
+userRouter.get("/me", authMiddleware, requireUser, getMe);
+userRouter.post("/resendemail", authMiddleware, requireUser, resendEmail);
 
 export default userRouter;
