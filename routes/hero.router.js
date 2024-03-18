@@ -1,5 +1,5 @@
 import { Router } from "express";
-const heroRouter = Router();
+import { body } from "express-validator";
 import authMiddleware from "../middlewares/auth.middleware.js";
 import requireUser from "../middlewares/requireUser.js";
 
@@ -11,12 +11,20 @@ import {
   deleteById,
 } from "../controllers/hero.controller.js";
 
-// heroRouter.use(authMiddleware);
+const heroRouter = Router();
 
 heroRouter.get("/heroes", authMiddleware, requireUser, getAll);
 heroRouter.get("/heroes/:id", authMiddleware, requireUser, getHeroById);
 // heroRouter.get("/:id", getById);
-heroRouter.post("/heroes", authMiddleware, requireUser, create);
+heroRouter.post(
+  "/heroes",
+  body("name").trim().isLength({ min: 2 }),
+  body("description").trim().isLength({ min: 5 }),
+  body("element").notEmpty(),
+  authMiddleware,
+  requireUser,
+  create
+);
 heroRouter.put("/heroes/:id", authMiddleware, requireUser, updateById);
 heroRouter.delete("/heroes/:id", authMiddleware, requireUser, deleteById);
 
