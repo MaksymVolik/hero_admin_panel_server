@@ -1,92 +1,97 @@
-import { sql } from "@vercel/postgres";
+import { validationResult } from "express-validator";
+import {
+  getHeroes,
+  getHero,
+  createHero,
+  updateHero,
+  deleteHero,
+} from "../service/hero.service.js";
+import { ApiError } from "../exceptions/api.error.js";
 
-export async function getAll(req, res) {
+export async function getAll(req, res, next) {
   try {
-    const { rows } = await sql`SELECT * FROM heroes ORDER BY id;`;
+    const user_id = req.user.user_id;
+
+    const heroes = await getHeroes(user_id);
+
     return res.status(200).json({
       message: `Heroes received successfully.`,
-      data: rows,
+      data: heroes,
     });
-  } catch (error) {
-    return res.status(500).json({ error });
+  } catch (e) {
+    next(e);
   }
 }
 
-export async function getHeroById(req, res) {
+export async function getHeroById(req, res, next) {
   try {
-    const id = req.params.id;
-    const { rowCount, rows } = await sql`SELECT * FROM heroes WHERE id=${id};`;
+    const user_id = req.user.user_id;
+    const hero_id = req.params.id;
 
-    if (rowCount === 0) {
-      return res.status(404).json({ message: "The hero not found." });
-    }
+    const hero = await getHero(hero_id, user_id);
 
     return res.status(200).json({
       message: `Hero received successfully.`,
-      data: rows,
+      data: hero,
     });
-  } catch (error) {
-    return res.status(500).json({ error });
+  } catch (e) {
+    next(e);
   }
 }
 
-export async function create(req, res) {
+export async function create(req, res, next) {
   try {
-    const { name, description, element } = req.body;
-
-    if (!name || !description || !element)
-      throw new Error("Name, description and element required");
-
-    const { rows } = await sql`INSERT INTO heroes (Name, Description, Element) 
-                VALUES (${name}, ${description}, ${element})
-                RETURNING *;`;
-    return res.status(201).json({
-      message: `A hero named ${name} has been created.`,
-      data: rows,
-    });
-  } catch (error) {
-    return res.status(500).json({ message: error.message });
-  }
-}
-
-export async function updateById(req, res) {
-  try {
-    const id = req.params.id;
-    const { name, description, element } = req.body;
-
-    const { rowCount, rows } = await sql`UPDATE heroes 
-                SET name=${name}, description=${description}, element=${element} 
-                WHERE id=${id} 
-                RETURNING *;`;
-
-    if (!rowCount || rowCount === 0) {
-      return res.status(404).json({ message: "The hero not found" });
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(ApiError.BadRequest("Error in validation", errors.array()));
     }
+
+    const user_id = req.user.user_id;
+
+    const hero = await createHero(req.body, user_id);
+
+    return res.status(201).json({
+      message: `A hero named "${hero[0].name}" has been created.`,
+      data: hero,
+    });
+  } catch (e) {
+    next(e);
+  }
+}
+
+export async function updateById(req, res, next) {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return next(ApiError.BadRequest("Error in validation", errors.array()));
+    }
+
+    const user_id = req.user.user_id;
+    const hero_id = req.params.id;
+
+    const hero = await updateHero(req.body, hero_id, user_id);
 
     return res.status(200).json({
       message: `The hero has been updated.`,
-      data: rows,
+      data: hero,
     });
-  } catch (error) {
-    return res.status(500).json({ error });
+  } catch (e) {
+    next(e);
   }
 }
 
-export async function deleteById(req, res) {
+export async function deleteById(req, res, next) {
   try {
-    const id = req.params.id;
-    const { rowCount, rows } =
-      await sql`DELETE FROM heroes WHERE id=${id} RETURNING *;`;
+    const user_id = req.user.user_id;
+    const hero_id = req.params.id;
 
-    if (!rowCount || rowCount === 0) {
-      return res.status(404).json({ message: "The hero not found" });
-    }
+    const hero = await deleteHero(hero_id, user_id);
 
     return res.status(200).json({
       message: `The hero has been deleted.`,
-      data: rows,
+      data: hero,
     });
-  } catch (error) {
-    return res.status(500).json({ error });
+  } catch (e) {
+    next(e);
   }
 }

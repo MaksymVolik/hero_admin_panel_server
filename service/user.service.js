@@ -132,3 +132,14 @@ export const getAllUsers = async () => {
   const { rows } = await sql`SELECT * FROM users;`;
   return rows;
 };
+
+export const getUserById = async (user_id) => {
+  const { rowCount, rows } =
+    await sql`SELECT * FROM users WHERE user_id=${user_id};`;
+
+  if (rowCount === 0) return null;
+
+  const user = new UserDto(rows[0]);
+
+  return user;
+};

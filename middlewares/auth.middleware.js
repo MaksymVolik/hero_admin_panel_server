@@ -1,7 +1,8 @@
 import { ApiError } from "../exceptions/api.error.js";
 import { validateAccessToken } from "../service/token.service.js";
+import { getUserById } from "../service/user.service.js";
 
-export default (req, res, next) => {
+export default async (req, res, next) => {
   try {
     const authorizationHeader = req.headers.authorization;
     if (
@@ -20,7 +21,13 @@ export default (req, res, next) => {
     if (!userData) {
       return next(ApiError.UnauthorizedError());
     }
-    req.user = userData;
+
+    const user = await getUserById(userData.user_id);
+    if (!user) {
+      return next(ApiError.UnauthorizedError());
+    }
+
+    req.user = user;
     next();
   } catch (e) {
     return next(ApiError.UnauthorizedError());
