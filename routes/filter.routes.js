@@ -1,7 +1,7 @@
 import { Router } from "express";
-const filterRouter = Router();
+import { getAll } from "../controllers/filter.controller.js";
 
-import { getAll, create } from "../controllers/filter.controller.js";
+const filterRouter = Router();
 
 filterRouter.get("/filters", getAll);
 // filterRouter.post("/filters", create);
