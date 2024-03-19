@@ -10,6 +10,17 @@ import {
 import { validationResult } from "express-validator";
 import { ApiError } from "../exceptions/api.error.js";
 
+// Cookie options
+const refreshTokenCookieOptions = {
+  expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  maxAge: 30 * 24 * 60 * 60 * 1000,
+  httpOnly: true,
+  sameSite: "lax",
+};
+
+if (process.env.NODE_ENV === "production")
+  refreshTokenCookieOptions.secure = true;
+
 export const getMe = (req, res, next) => {
   try {
     const user = req.user;
@@ -31,10 +42,11 @@ export async function registration(req, res, next) {
     }
     const { username, email, password } = req.body;
     const UserData = await regUser(username, email, password);
-    res.cookie("refreshToken", UserData.refreshToken, {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-    });
+    res.cookie(
+      "refreshToken",
+      UserData.refreshToken,
+      refreshTokenCookieOptions
+    );
     return res.json(UserData);
   } catch (e) {
     next(e);
@@ -47,10 +59,11 @@ export async function login(req, res, next) {
 
     const UserData = await loginUser(email, password);
 
-    res.cookie("refreshToken", UserData.refreshToken, {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-    });
+    res.cookie(
+      "refreshToken",
+      UserData.refreshToken,
+      refreshTokenCookieOptions
+    );
 
     return res.json(UserData);
   } catch (e) {
@@ -73,10 +86,11 @@ export async function refresh(req, res, next) {
     const { refreshToken } = req.cookies;
 
     const UserData = await refreshUser(refreshToken);
-    res.cookie("refreshToken", UserData.refreshToken, {
-      maxAge: 30 * 24 * 60 * 60 * 1000,
-      httpOnly: true,
-    });
+    res.cookie(
+      "refreshToken",
+      UserData.refreshToken,
+      refreshTokenCookieOptions
+    );
     return res.json(UserData);
   } catch (e) {
     next(e);
