@@ -1,9 +1,10 @@
 import { Router } from "express";
 import { getAll } from "../controllers/filter.controller.js";
+import authMiddleware from "../middlewares/auth.middleware.js";
 
 const filterRouter = Router();
 
-filterRouter.get("/filters", getAll);
+filterRouter.get("/filters", authMiddleware, getAll);
 // filterRouter.post("/filters", create);
 
 export default filterRouter;
