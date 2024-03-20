@@ -12,7 +12,9 @@ import { ApiError } from "../exceptions/api.error.js";
 
 // Cookie options
 const refreshTokenCookieOptions = {
-  expires: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+  expires: new Date(
+    Date.now() + process.env.REFRESH_TOKEN_EXPIRES_IN * 24 * 60 * 60 * 1000
+  ),
   maxAge: 30 * 24 * 60 * 60 * 1000,
   httpOnly: true,
   sameSite: "lax",
