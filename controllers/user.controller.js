@@ -12,13 +12,14 @@ import { ApiError } from "../exceptions/api.error.js";
 
 // Cookie options
 const refreshTokenCookieOptions = {
+  httpOnly: true,
+  path: "/",
+  sameSite: "none",
+  partitioned: true,
   expires: new Date(
     Date.now() + process.env.REFRESH_TOKEN_EXPIRES_IN * 24 * 60 * 60 * 1000
   ),
   maxAge: process.env.REFRESH_TOKEN_EXPIRES_IN * 24 * 60 * 60 * 1000,
-  httpOnly: true,
-  sameSite: "None",
-  partitioned: true,
 };
 
 if (process.env.NODE_ENV === "production")
